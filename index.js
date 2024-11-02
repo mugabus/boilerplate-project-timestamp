@@ -18,35 +18,36 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + '/views/index.html');
 });
 
-// Function to check if date is invalid
+// Helper function to check if date is invalid
 const isInvalidDate = (date) => isNaN(date.getTime());
 
-// Your first API endpoint... 
-app.get("/api/:date", function (req, res) {
-  let date = new Date(req.params.date);
+// API endpoint for /api/:date?
+app.get("/api/:date?", function (req, res) {
+  let dateString = req.params.date;
+  let date;
 
-  // If date is invalid, try interpreting the date as a timestamp
-  if (isInvalidDate(date)) {
-    date = new Date(+req.params.date);
+  // If no date is provided, use the current date
+  if (!dateString) {
+    date = new Date();
+  } else {
+    // Check if the date is a valid timestamp (all numbers)
+    if (!isNaN(dateString)) {
+      date = new Date(parseInt(dateString));
+    } else {
+      // Otherwise, parse the date string as is
+      date = new Date(dateString);
+    }
   }
 
-  // If date is still invalid, return an error response
+  // Check for invalid date and return an error if needed
   if (isInvalidDate(date)) {
     return res.json({ error: "Invalid Date" });
   }
 
-  // Otherwise, return the Unix and UTC formats
+  // Otherwise, return the Unix and UTC date formats
   res.json({
     unix: date.getTime(),
     utc: date.toUTCString(),
-  });
-});
-
-// Additional endpoint to get the current date
-app.get("/api", (req, res) => {
-  res.json({
-    unix: new Date().getTime(),
-    utc: new Date().toUTCString(),
   });
 });
 
